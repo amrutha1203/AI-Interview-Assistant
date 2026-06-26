@@ -1,8 +1,6 @@
 import streamlit as st
 import pdfplumber
 from docx import Document
-from PIL import Image
-import pytesseract
 import os
 
 st.set_page_config(
@@ -63,7 +61,6 @@ def extract_text(file):
     extension = os.path.splitext(file.name)[1].lower()
 
     try:
-        # PDF
         if extension == ".pdf":
             text = ""
             with pdfplumber.open(file) as pdf:
@@ -73,21 +70,12 @@ def extract_text(file):
                         text += page_text + "\n"
             return text
 
-        # DOCX
         elif extension == ".docx":
             doc = Document(file)
-            return "\n".join(
-                para.text for para in doc.paragraphs
-            )
+            return "\n".join(para.text for para in doc.paragraphs)
 
-        # TXT
         elif extension == ".txt":
             return file.read().decode("utf-8")
-
-        # Images
-        elif extension in [".jpg", ".jpeg", ".png"]:
-            image = Image.open(file)
-            return pytesseract.image_to_string(image)
 
         else:
             return "Unsupported file type."
@@ -107,7 +95,7 @@ if not st.session_state.started:
 
     resume = st.file_uploader(
         "Upload Resume",
-        type=["pdf", "docx", "txt", "jpg", "jpeg", "png"]
+        type=["pdf", "docx", "txt"]
     )
 
     if resume is not None:
@@ -161,8 +149,6 @@ else:
             else:
                 st.warning("Please enter your answer.")
 
-    # ---------------- FINAL RESULT ----------------
-
     else:
 
         total_score = 0
@@ -174,16 +160,12 @@ else:
 
         st.success("Interview Completed 🎉")
 
-        st.write(
-            f"### Final Score: {total_score} / {max_score}"
-        )
+        st.write(f"### Final Score: {total_score} / {max_score}")
 
         st.subheader("Your Answers")
 
         for i, answer in enumerate(st.session_state.answers):
-            st.write(
-                f"**Q{i+1}: {st.session_state.questions[i]}**"
-            )
+            st.write(f"**Q{i+1}: {st.session_state.questions[i]}**")
             st.write(answer)
 
             answer_score = evaluate(answer)
